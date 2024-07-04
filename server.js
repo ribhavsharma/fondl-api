@@ -6,7 +6,9 @@ const app = express();
 const port = 3000;
 
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin: true
+}))
 
 app.get("/", (req, res) => {
   res.send("fondlin'");
@@ -28,6 +30,9 @@ app.get("/download", async (req, res) => {
     } else if (source === "befonts") {
       fonts = await getFontsBefonts($);
     }
+      else if (source === "fontspace") {
+      fonts = getFontsFontSpace($);
+    }
     res.json(fonts);
   } catch (error) {
     console.error("Error fetching the font page:", error);
@@ -46,6 +51,9 @@ const makeUrl = (fontName, source) => {
     return `https://www.dafont.com/search.php?q=${encodeURIComponent(fontName)}`;
   } else if (source === "befonts") {
     return `https://www.befonts.com/?s=${encodeURIComponent(fontName)}`;
+  }
+  else if (source === "fontspace") {
+    return `https://www.fontspace.com/search?q=${encodeURIComponent(fontName)}`;
   }
   return null;
 };
@@ -87,4 +95,14 @@ const getFontsBefonts = async ($) => {
   );
 
   return fonts;
+};
+
+const getFontsFontSpace = ($) => {
+  return $(".font-container").map((i, el) => {
+    return {
+      name: $(el).find(".font-names h2 a").text().trim(),
+      preview_img: $(el).find("img").attr("src"),
+      download_link: $(el).find(".action-buttons a").attr("href"),
+    };
+  }).get();
 };
